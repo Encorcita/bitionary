@@ -1,0 +1,318 @@
+{
+  "*sǖt": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) older sister",
+    "etymology": "< *sǖ- -t"
+  },
+  "*eke": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) older sister",
+    "etymology": "< *ek-ke"
+  },
+  "*+lan-": {
+    "language": "Proto-Turkic",
+    "etymology": "< *+la- *-n-"
+  },
+  "*epe": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) mother",
+    "etymology": "< *apa"
+  },
+  "*ōt": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) fire"
+  },
+  "*ōtun-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to blaze up",
+    "etymology": "< *ōt + *+un-"
+  },
+  "*ōtuŋ": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) firewood",
+    "etymology": "< *ōtun- + *-g"
+  },
+  "*ōta-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to make fire",
+    "etymology": "< *ōt + *+a-"
+  },
+  "*ōtag": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) fireplace",
+    "etymology": "< *ōta- + *-g"
+  },
+  "*-g": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms deverbal nouns"
+  },
+  "*ōtlan-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to flare up",
+    "etymology": "< *ōt + *+lan-"
+  },
+  "*āb": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) hunting, hunt, prey, chase",
+    "comment": "Most likely cognate with *āg, meaning “trap”."
+  },
+  "*apāŋ": {
+    "language": "Proto-Turkic",
+    "meaning": "(conjunction) if",
+    "etymology": "< *ap+ + *āŋ"
+  },
+  "*apa": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) father's sister; (noun) elder sister of a male",
+    "etymology": "< *ap-pa"
+  },
+  "*ap-pa": {
+    "language": "Proto-Turkic",
+    "meaning": "(baby-talk) paternal elder female relative"
+  },
+  "*ap+": {
+    "language": "Proto-Turkic",
+    "meaning": "(prefix) emphatic strengthening particle"
+  },
+  "*āŋ": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) difference"
+  },
+  "*āŋla-": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) to understand",
+    "etymology": "< *āŋ + *+la-"
+  },
+  "*āŋlag": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) understanding",
+    "etymology": "< *āŋla- + *+g"
+  },
+  "*ābla-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to hunt",
+    "etymology": "< *āb + *+la-"
+  },
+  "*ābčï": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) hunter",
+    "etymology": "< *āb + *+čï"
+  },
+  "*+čï": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms occupational nouns and adjectives"
+  },
+  "*aŋ": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) wild animal",
+    "comment": "Most likely cognate with *āg, meaning “trap”."
+  },
+  "*aŋdï-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to entrap",
+    "etymology": "< *aŋ + *+dï-",
+    "comment": "Shows semantic equivalence to *ābla- at certain stages."
+  },
+  "*+dï-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms transitive verbs",
+    "comment": "While the possibility that it is an affixed form of *tï- (< tïḏ-), meaning “to bar”, may be worth considering, its ultimate nature and function remain unknown."
+  },
+  "*sǖči-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to become sweet",
+    "comment": "Seems like a simplex root, but an evolution from *sǖt “milk” via the suffix *+či- (see *töŕči-), with *sǖtči- as an intermediate form, is not an unlikely scenario. Notably, Persian شیرین “sweet” derives from Persian شیر “milk”."
+  },
+  "*sǖčig": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) sweet",
+    "etymology": "< *sǖči- *-g"
+  },
+  "*kap-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to close"
+  },
+  "*kapgak": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) lid",
+    "etymology": "< *kap- *-gak"
+  },
+  "*kapïg": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) door",
+    "etymology": "< *kap- *-ïg"
+  },
+  "*ač-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to open"
+  },
+  "*ačuk": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) open",
+    "etymology": "< *ač- + *-uk"
+  },
+  "*ačuksuŕ": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) openless, closed",
+    "etymology": "< *ačuk + *+suŕ"
+  },
+  "*ačïl-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to be opened",
+    "etymology": "< *ač- + *-ïl-"
+  },
+  "*-ïl-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms intransitive of verbs"
+  },
+  "*külün-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to grin",
+    "etymology": "< *kül- + *-ün-"
+  },
+  "*külüg": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) famous, famed",
+    "etymology": "< *kü + *+lüg"
+  },
+  "*kültür-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to make [s.o.] laugh",
+    "etymology": "< *kül- + *-tür-"
+  },
+  "*+suŕ": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) without"
+  },
+  "*ačuklug": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) brave",
+    "etymology": "< *ačuk + *+lug"
+  },
+  "*ačukluk": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) opennes",
+    "etymology": "< *ačuk + *+luk"
+  },
+  "*ačtur-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to get [s.th.] opened",
+    "etymology": "< *ač- + *-tur-"
+  },
+  "*-tur-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) to make; (suffix) to cause",
+    "comment": "Attested only in the forms -tür- and -tur- (notationally as -tUr-) (cf. -tür-)."
+  },
+  "*-tür-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) to make; (suffix) to cause"
+  },
+  "*ačguč": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) key",
+    "etymology": "< *ač- + *-guč"
+  },
+  "*ačgu": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) key",
+    "etymology": "< *ač- + *-gu"
+  },
+  "*kül-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to laugh",
+    "etymology": "< *kü + *+l-"
+  },
+  "*+l-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms intransitive verbs"
+  },
+  "*kü": {
+    "language": "Proto-Turkic",
+    "meaning": "(onomatopoeia) giggle; (noun) noise",
+    "comment": "As the verb *kül- suggests; “voice, noise, sound; fame, glory, renown” must be a secondary context derived from the sound of laughter or giggling."
+  },
+  "*küle-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to praise",
+   "etymology": "< *kü + *+le-",
+   "comment": "The same semantic progression from “voice” to “fame” to “praise” is also observed in the evolution of kög to köged-."
+  },
+  "*+le-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms denominal verbs"
+  },
+  "*külüm": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) smile, laugh",
+    "etymology": "< *kül- + *-üm"
+  },
+  "*külüş-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to laugh together",
+    "etymology": "< *kül- + *-üş-"
+  },
+  "*-üş-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) together; (suffix) each other"
+  },
+  "*külüt": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) gag",
+    "etymology": "< *kül- + *-üt"
+  },
+  "*-uk": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) form intransitive-passive nouns"
+  },
+  "*külümsin-": {
+    "language": "Proto-Turkic",
+    "meaning": "(intransitive) to smile",
+    "etymology": "< *külüm + *+sin-",
+    "comment": "An intermediate form such as *külümsi- can also be reconstructed. Moreover, no such form is attested in any known corpus."
+  },
+  "*+sin-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) ?",
+    "etymology": "< *+si- *-n-"
+  },
+  "*+si-": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) ?",
+    "comment": "While the notational representation of the root of the privative suffixes (+suŕ, +süŕ, +sıŕ, +siŕ) is +sU-, that of the simulative suffix (+sı-, +si-) is +sI-. This distinction clearly indicates that they are not cognate."
+  },
+  "*külgü": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) laughter",
+    "etymology": "< *kül- + *-gÜ"
+  },
+  "*-üm": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms deverbal nouns",
+    "etymology": "< *-Xm"
+  },
+  "*+lüg": {
+    "language": "Proto-Turkic",
+    "meaning": "(suffix) forms positive adjective",
+    "etymology": "< ? *+le- + *-üg"
+  },
+  "*sǖr-": {
+    "language": "Proto-Turkic",
+    "meaning": "(transitive) to lead",
+    "etymology": "< *sǖ *+r-"
+  },
+  "*sǖrüg": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) herd",
+    "etymology": "< *sǖr- + *-üg"
+  },
+  "*sǖ": {
+    "language": "Proto-Turkic",
+    "meaning": "(noun) army; (noun) soldier"
+  },
+  "*sǖlüg": {
+    "language": "Proto-Turkic",
+    "meaning": "(adjective) armed, military",
+    "etymology": "< *sǖ + *+lüg"
+  }
+}
