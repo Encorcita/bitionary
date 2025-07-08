@@ -1,0 +1,9 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+	<title>image</title>
+	<style>
+		.s0 { fill: #0a0e11 } 
+		.s1 { fill: #f3c723 } 
+	</style>
+	<path id="Şekil 1" fill-rule="evenodd" class="s0" d="m85 0h342c46.9 0 85 38.1 85 85v342c0 46.9-38.1 85-85 85h-342c-46.9 0-85-38.1-85-85v-342c0-46.9 38.1-85 85-85z"/>
+	<path id="b" fill-rule="evenodd" class="s1" d="m216.1 90.9v109.9h117.7v220.2h-154.8v-330.1zm0 145v149l78.7-0.5v-148.5z"/>
+</svg>
