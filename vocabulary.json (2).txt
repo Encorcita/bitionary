@@ -1,0 +1,116 @@
+{
+ "*ï̄t": {
+ "language": "Proto-Turkic",
+ "meaning": "N.: dog"
+ },
+  "*ï̄tla-": {
+  "language": "Proto-Turkic",
+  "meaning": "TR.: to insult by likening to a dog; TR.: to revile"
+  },
+ "*ïsïr-": {
+ "language": "Proto-Turkic",
+ "meaning": "N.: to bite; TR.: to eat"
+ },
+  "*ïsrïl-": {
+  "etymology": "< *ïsïr- *-ïl-",
+  "language": "Proto-Turkic",
+  "meaning": "INTR.: to be bitten"
+  },
+ "*ï̄": {
+ "language": "Proto-Turkic",
+ "meaning": "N.: bush"
+ },
+  "*ï̄gač": {
+  "etymology": "< *ï̄ + *+gač",
+  "language": "Proto-Turkic",
+  "meaning": "N.: tree"
+  },
+  "*ï̄lag": {
+  "etymology": "< *ï̄ + *+lag",
+  "language": "Proto-Turkic",
+  "meaning": "N.: grassland"
+  },
+ "*ï̄ḏ-": {
+ "alternatives": ["*ï̄-"],
+ "language": "Proto-Turkic",
+ "meaning": "TR.: to send (something <i>Acc.</i>)"
+ },
+  "*ï̄ḏma": {
+  "etymology": "< *ï̄ḏ- *-ma",
+  "language": "Proto-Turkic",
+  "meaning": "ADJ.: freed"
+  },
+  "*ï̄ḏsa-": {
+  "etymology": "< *ï̄ḏ- + *-sa-",
+  "language": "Proto-Turkic",
+  "meaning": "TR.: to wish to send"
+  },
+  "*ï̄ḏuk": {
+  "etymology": "< *ï̄ḏ- + *-uk",
+  "language": "Proto-Turkic",
+  "meaning": "ADJ.: sent; ADJ.: sacred"
+  },
+  "*ï̄rka-": {
+  "etymology": "< *ï̄- + *-rka-",
+  "language": "Proto-Turkic",
+  "meaning": "TR.: to shake, or rock (something <i>Acc.</i>)"
+  },
+  "*ï̄l-": {
+  "alternatives": "< *ï̄- *-l-",
+  "language": "Proto-Turkic",
+  "meaning": "INTR.: to be sent; INTR. to descend (from something <i>Abl.</i>)’"
+  },
+  "*ï̄n": {
+  "etymology": "< *ï̄- + *-n",
+  "language": "Proto-Turkic",
+  "meaning": "N.: deposit"
+  },
+   "*ï̄na-": {
+   "etymology": "< *ï̄n + *+a-",
+   "language": "Proto-Turkic",
+   "meaning": "TR.: to trust, rely on (someone <i>Dat.</i>)"
+   },
+    "*ï̄nal": {
+    "etymology": "< *ï̄na- + *-l",
+    "language": "Proto-Turkic",
+    "meaning": "ADJ.: trustworthy"
+    },
+    "*ï̄nan-": {
+    "etymology": "< *ï̄na- + *-n-",
+    "language": "Proto-Turkic",
+    "meaning": "INTR.: to believe (something <i>Dat.</i>)"
+    },
+     "*ï̄nanč": {
+     "etymology": "< *ï̄nan- + *-č",
+     "language": "Proto-Turkic",
+     "meaning": "N.: reliance, trust; ADJ. reliable, trustworthy"
+    },
+ "*ïra-": {
+ "language": "Proto-Turkic",
+ "meaning": "INTR.: to be distant; INTR.: to keep away (from something <i>Abl.</i>)"
+ },
+  "*ïrak": {
+  "etymology": "< *ïra- + *-k",
+  "language": "Proto-Turkic",
+  "meaning": "ADJ.: distant, far away"
+  },
+  "*ïrat-": {
+  "etymology": "< *ïra- + *-t-",
+  "language": "Proto-Turkic",
+  "meaning": "TR.: to send (someone <i>Acc.</i>) away, or far away"
+  },
+ "*ïk": {
+ "language": "Proto-Turkic",
+ "meaning": "ONOM.: hiccough"
+ },
+  "*ïkïla-": {
+  "etymology": "< *ïk + *ïla-",
+  "language": "Proto-Turkic",
+  "meaning": "INTR. to"
+  },
+  "*ïkur-": {
+  "etymology": "< *ïk *+ur-",
+  "language": "Proto-Turkic",
+  "meaning": "INTR. to"
+ }
+}

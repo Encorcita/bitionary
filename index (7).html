@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>biti I/O by Bitionary</title>
+  <link rel="icon" href="bitionary.svg" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geo:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=more_horiz" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --vh: 1vh;
+      --color-accent: #fcd434;
+      --color-accent-dark: #f0b90b;
+      --color-bg-primary: #191a1f;
+      --color-text-primary: #ffffff;
+      --color-bg-secondary: #1e2026;
+      --color-bg-tertiary: #464d57;
+      --color-orange: #fe633a;
+      --color-bg-input: #29313c;
+      --color-text-placeholder: #5d626e;
+      --color-accent-info: #2ebd85;
+      --color-bg-info: #112822;
+      --color-error: #f6465d;
+      --color-system-text: #285fd5;
+      --color-system-bg: #011535;
+      --color-welcome-text: #be93fd;
+      --color-welcome-bg: #2a1a3e;
+      --color-lang-bg: #2e2a1e;
+      --color-comment-border: #8d60ef;
+      --color-comment-bg: rgba(141, 96, 239, 0.1);
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'IBM Plex Sans', sans-serif;
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    ::selection {
+      background-color: var(--color-accent);
+      color: var(--color-bg-primary);
+    }
+    y { color: var(--color-accent); }
+    k { color: var(--color-accent); font-weight: bold; }
+
+    #app-container {
+      height: calc(var(--vh, 1vh) * 100);
+      overflow: hidden;
+      background-color: var(--color-bg-primary);
+    }
+    header { cursor: pointer; }
+
+    #ai-title {
+      font-family: 'Geo', sans-serif;
+      font-weight: bold;
+      color: var(--color-accent);
+    }
+    #id-copy-button,
+    #id-save-button,
+    #delete-button-wrapper,
+    #submit-button,
+    #saved-words-toggle-button {
+        overflow: hidden;
+    }
+
+    main#chat-container {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #chat-container.is-dragging {
+      cursor: grabbing;
+    }
+    .chat-container::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      background: transparent;
+    }
+
+    .message-wrapper {
+      display: flex;
+      margin-bottom: 1rem;
+      position: relative;
+      transition: transform 2.2s ease-out, opacity 0.4s ease-out;
+    }
+    .message-wrapper.deleting {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    .user-message .message-content-wrapper { justify-content: flex-end; }
+    .ai-message .message-content-wrapper { justify-content: flex-start; }
+    .message-content-wrapper {
+      display: flex;
+      width: 100%;
+    }
+    .message-bubble {
+      max-width: 82%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      line-height: 1.5;
+      position: relative;
+    }
+    .user-message .message-bubble {
+      background-color: var(--color-bg-primary);
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-bg-tertiary);
+      transition: border-color 0.3s ease;
+      cursor: pointer;
+    }
+    .message-wrapper.user-message.selected-for-deletion .message-bubble {
+        border-color: var(--color-error);
+    }
+    .ai-message .message-bubble {
+      background-color: transparent;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    
+    .message-meta {
+      position: absolute;
+      top: 0%;
+      right: 0;
+      transform: translateY(-50%);
+      font-size: 0.6rem;
+      font-weight: normal;
+      color: var(--color-bg-tertiary);
+      pointer-events: none;
+      display: none;
+      transition: color 0.3s ease;
+    }
+    .message-wrapper.selected-for-deletion .message-meta {
+        color: var(--color-error);
+    }
+    .id-mode .message-meta.meta-id,
+    .timestamp-mode .message-meta.meta-timestamp { display: block; }
+
+    .message-bubble.truncated {
+      max-height: 7.5em;
+      overflow: hidden;
+      position: relative;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .message-bubble.truncated::before,
+    .message-bubble.truncated::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .message-bubble.truncated::before {
+      top: 0;
+      height: 2rem;
+      background: linear-gradient(var(--color-bg-primary), transparent);
+      opacity: 0;
+    }
+    .message-bubble.truncated::after {
+      bottom: 0;
+      height: 50%;
+      background: linear-gradient(transparent, var(--color-bg-primary));
+    }
+    .message-bubble.truncated.scrolled-past-top::before { opacity: 1; }
+    .message-bubble.truncated.scrolled-to-bottom::after { opacity: 0; }
+    .message-bubble.truncated p {
+      height: 100%;
+      overflow-y: scroll;
+      padding-right: 15px;
+      cursor: grab;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-top: 0.75rem;
+      padding-bottom: 1.5rem;
+    }
+    .message-bubble.truncated p::-webkit-scrollbar { display: none; }
+    .read-more-indicator {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 35px;
+      height: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--color-bg-tertiary);
+      z-index: 2;
+      border-top-right-radius: 0.5rem;
+      transition: background-color 0.3s ease;
+    }
+    .message-wrapper.selected-for-deletion .read-more-indicator {
+      background-color: var(--color-error);
+    }
+    .read-more-indicator .material-symbols-outlined {
+      color: var(--color-bg-primary);
+      font-size: 22px;
+    }
+
+    #footer #input-container {
+      display: flex;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background-color: var(--color-bg-input);
+    }
+    #chat-input {
+      background-color: transparent;
+      color: var(--color-text-primary);
+      border: none;
+      flex-grow: 1;
+      position: relative;
+      z-index: 2;
+      -webkit-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    #chat-input::placeholder {
+      transition: opacity 0.5s ease-in-out;
+      opacity: 1;
+      color: var(--color-text-placeholder);
+    }
+    #chat-input.hiding-placeholder::placeholder { opacity: 0; }
+    #autocomplete-ghost {
+      transition: opacity 0.3s ease-in-out;
+    }
+    #autocomplete-ghost.fading { opacity: 0; }
+    #submit-button {
+      flex-shrink: 0;
+      transition: all 0.2s ease-in-out;
+    }
+    #submit-button.empty-state {
+      background-color: var(--color-bg-tertiary);
+      color: var(--color-bg-secondary);
+      cursor: pointer;
+    }
+    #submit-button.loading {
+      background-color: var(--color-accent);
+      color: var(--color-bg-primary);
+      cursor: pointer;
+    }
+    #submit-button.disabled-loading {
+      background-color: var(--color-bg-tertiary) !important;
+      color: var(--color-bg-secondary) !important;
+      cursor: not-allowed;
+    }
+    #header-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    #top-row-controls {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        align-items: center;
+    }
+    
+    #id-search-wrapper, #delete-button-wrapper, #saved-words-toggle-button {
+        display: flex;
+        align-items: center;
+        height: 2rem;
+        background-color: var(--color-bg-input);
+        border-radius: 8px;
+        position: relative;
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out;
+    }
+
+    #id-search-wrapper {
+        width: 175px;
+    }
+    
+    #saved-words-search-wrapper {
+        display: none; 
+        align-items: center;
+        height: 2rem;
+        width: 175px;
+        background-color: rgba(0, 0, 0, 0.4); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    /* ===== YENİ/GÜNCELLENMİŞ CSS KURALLARI BAŞLANGICI ===== */
+
+    .meaning-item {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+.meaning-prefix-box {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9em;
+    font-weight: bold;
+    background-color: #000000;
+    color: var(--color-text-primary);
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-right: 0.5em;
+    white-space: nowrap;
+    vertical-align: middle;
+    gap: 8px;
+}
+    .meaning-prefix-box > span:first-child {
+        color: var(--color-accent);
+    }
+.meaning-divider {
+  /* This makes the divider fill the parent's height */
+    width: 4px;
+    height: 0px;
+    background-color: var(--color-accent);
+    margin: 0 4px;
+}
+    .meaning-text {
+        vertical-align: middle;
+    }
+
+
+    #saved-words-search-input {
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+        border: none;
+        color: var(--color-text-primary);
+        font-size: 0.85rem; /* ID input ile aynı boyuta getirildi */
+        caret-color: var(--color-orange);
+        -webkit-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+        padding: 0 5px; /* ID input ile aynı padding'e sahip */
+        text-align: center; /* Yazı ortalandı */
+    }
+     #saved-words-search-input:focus {
+        outline: none;
+     }
+
+    #sort-controls-wrapper {
+        display: flex;
+        height: 100%;
+        position: relative;
+        align-items: center;
+    }
+    #sort-time-button, #sort-alpha-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      flex-shrink: 0;
+      color: var(--color-text-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    #sort-time-button svg, #sort-alpha-button svg {
+        width: 20px;
+        height: 20px;
+    }
+    #sort-indicator {
+        position: absolute;
+        bottom: 0;
+        height: 3px;
+        background-color: var(--color-orange);
+        border-radius: 2px 2px 0 0;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    #delete-button-wrapper.selected {
+        background-color: var(--color-error);
+    }
+     #delete-button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        padding: 0 10px;
+    }
+    #delete-icon {
+        color: var(--color-text-primary);
+        transition: color 0.3s ease;
+    }
+    
+    /* Input ve etiketini saran sarmalayıcılar için ortak stil */
+    #id-input-container, #saved-words-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-grow: 1;
+    }
+
+    #id-input {
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+      border: none;
+      color: var(--color-text-primary);
+      text-align: center;
+      font-size: 0.85rem;
+      padding: 0 5px;
+      caret-color: var(--color-accent);
+      -webkit-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+    #id-input:focus { outline: none; }
+    #id-input:disabled { background-color: transparent; }
+    
+    .placeholder-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--color-text-placeholder);
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+      width: 100%;
+      text-align: center;
+      opacity: 1;
+    }
+    
+    /* Her iki etiketi de gizleyen TEK kural */
+    #id-input-container input:focus + .placeholder-label,
+    #id-input-container input:not(:placeholder-shown) + .placeholder-label,
+    #saved-words-input-container input:focus + .placeholder-label,
+    #saved-words-input-container input:not(:placeholder-shown) + .placeholder-label {
+        opacity: 0;
+    }
+    
+    #id-copy-button, #id-save-button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
+    /* ===== YENİ/GÜNCELLENMİŞ CSS KURALLARI BİTİŞİ ===== */
+    
+    #id-copy-button:disabled #id-copy-icon {
+      color: var(--color-bg-tertiary);
+      cursor: not-allowed;
+    }
+    #id-copy-icon, #id-save-icon, #saved-words-toggle-icon {
+      color: var(--color-text-primary);
+      transition: color 0.3s ease, fill 0.3s ease, stroke 0.3s ease;
+    }
+
+    #saved-words-toggle-button {
+        flex-shrink: 0; 
+        padding: 0 10px;
+        cursor: pointer;
+    }
+
+    #saved-words-toggle-button.toggled {
+        background-color: var(--color-orange);
+    }
+
+    #saved-words-menu {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.4); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 8px;
+        z-index: 20;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        padding: 0;
+        overflow: auto; 
+    }
+
+    #saved-words-menu.is-open {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #saved-words-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+     #saved-words-list li {
+        padding: 0.45rem 1rem;
+        border-radius: 0;
+        cursor: pointer;
+        font-size: 0.95rem;
+        border-bottom: none;
+        position: relative;
+        overflow: hidden;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.3s ease, max-height 0.3s ease;
+        max-height: 50px; 
+        opacity: 1;
+    }
+    #saved-words-list li.hidden {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        pointer-events: none;
+    }
+
+
+    #footer-indicator-container {
+      position: absolute;
+      right: 4.5rem;
+      top: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      z-index: 3;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+    #footer-indicator-container.is-overlapped { opacity: 0.55; }
+    .thinking-indicator {
+      background-color: var(--color-bg-info);
+      color: var(--color-accent-info);
+    }
+    .system-indicator {
+      background-color: var(--color-system-bg);
+      color: var(--color-system-text);
+    }
+    .welcome-indicator {
+      background-color: var(--color-welcome-bg);
+      color: var(--color-welcome-text);
+    }
+    .language-info {
+      background-color: var(--color-lang-bg);
+      color: var(--color-accent);
+    }
+    .thinking-indicator, .system-indicator, .welcome-indicator, .language-info {
+      text-transform: capitalize;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+    }
+    .thinking-indicator {
+      position: relative;
+      overflow: hidden;
+    }
+    .thinking-indicator::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      animation: shimmer 1.8s infinite linear;
+    }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+    .suggestion-link {
+      position: relative;
+      display: inline-flex;
+      margin: 4px 4px 0 0;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease-out, transform 0.4s ease-out, box-shadow 0.2s ease-in-out;
+    }
+    .suggestion-link:focus { outline: none; }
+
+    .suggestion-content-wrapper {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        border-radius: inherit;
+        background-color: #2a3139;
+        color: #eff5fc;
+        transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    .suggestion-link.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+     .message-wrapper.deleting .suggestion-link {
+        transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    #chat-container.ai-is-typing .suggestion-link,
+    #chat-container.is-loading .suggestion-link {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+.suggestion-saved-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+    .comment-section {
+      position: relative;
+      padding: 0.5rem 0.5rem 0.5rem 1rem;
+      margin-top: 0.75rem;
+      border-left: 3px solid transparent;
+      transition: border-color 0.3s ease-in, background-color 0.3s ease-in;
+      border-radius: 6px;
+      background-color: transparent;
+    }
+    .comment-section.visible {
+      border-left-color: var(--color-comment-border);
+      background-color: var(--color-comment-bg);
+    }
+    .comment-section p { margin: 0; padding: 0; }
+    .comment-word {
+      display: inline-block;
+      opacity: 0;
+      filter: blur(2px);
+      transform: translateY(10px);
+      transition: opacity 0.5s ease-out, filter 0.1s ease-out, transform 0.1s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    }
+    .comment-word.visible {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+
+    .typing-cursor {
+      display: inline-block;
+      transform: scale(1.5
+      );
+      margin: 0 0.1em;
+      animation: blink 1s step-end infinite;
+      color: var(--color-accent-info);
+    }
+    .vocab-load-error .typing-cursor { color: var(--color-error); }
+    @keyframes blink { 50% { opacity: 0; } }
+
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 1.5em;
+}
+    .loading-dots span {
+      width: 4px;
+      height: 4px;
+      background-color: var(--color-accent-info);
+      border-radius: 50%;
+      animation: scale-wave 1.4s infinite ease-in-out;
+    }
+    .loading-dots.error span { background-color: var(--color-error); }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    .loading-dots span:nth-child(4) { animation-delay: 0.6s; }
+    @keyframes scale-wave {
+      0%, 100% { transform: scale(0.1); }
+      50% { transform: scale(1.4); }
+    }
+    
+    .has-ripple {
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple-effect 0.6s linear;
+      background-color: rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+    }
+    .has-gray-ripple .ripple {
+        background-color: rgba(128, 128, 128, 0.3);
+    }
+    @keyframes ripple-effect {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    @keyframes tag-fade-in {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes tag-fade-out {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.8); }
+    }
+    .tag-anim-in { animation: tag-fade-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    .tag-anim-out { animation: tag-fade-out 0.2s ease-in forwards; }
+    /* TÜM DİKEY ÇİZGİLER İÇİN GEÇERLİ TEK KURAL */
+.divider {
+    height: 60%;
+    width: 0.5px;
+    background-color: var(--color-bg-tertiary);
+    opacity: 0.4;
+    margin: auto 0;
+    flex-shrink: 0;
+}
+    @keyframes wipe-to-default {
+      from {
+        background-position: 100% 0;
+      }
+      to {
+        background-position: 0 0;
+      }
+    }
+
+    #delete-button-wrapper.deselected-animating {
+      background-image: linear-gradient(to right, var(--color-bg-input) 50%, var(--color-error) 50%);
+      background-size: 200% 100%;
+      animation: wipe-to-default 0.4s ease-out forwards;
+    }
+    
+    /* === MODIFIED CSS FOR SELECTION INDICATOR === */
+    #selection-count-indicator {
+        transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, width 0.2s ease-in-out;
+        transform-origin: right;
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+    }
+    #selection-count-indicator.visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+    }
+    /* === END MODIFIED CSS === */
+
+    /* Ripple efektinin buton sınırlarına uyması için genel kural */
+#id-search-wrapper button,
+#sort-controls-wrapper button {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Kapsayıcının TÜRÜNÜN SONUNCUSU OLAN butonların sağ köşelerini yuvarlat */
+#id-search-wrapper button:last-of-type,
+#sort-controls-wrapper button:last-of-type {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+  </style>
+</head>
+<body class="id-mode">
+  <div id="app-container" class="max-w-[700px] mx-auto flex flex-col relative">
+    <header class="absolute top-0 left-0 right-0 pt-4 px-4 pb-1 z-10 flex justify-between items-start">
+      <h1 id="ai-title" style="font-size: 2rem; line-height: 2rem; transform-origin: top left;">biti I/O</h1>
+      <div id="header-controls">
+<div id="top-row-controls">
+  <div id="saved-words-search-wrapper">
+    <div id="saved-words-input-container">
+      <input type="text" id="saved-words-search-input" placeholder=" " autocomplete="off">
+      <label for="saved-words-search-input" class="placeholder-label">SAVES</label>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div id="sort-controls-wrapper">
+      <button id="sort-time-button" class="has-ripple has-gray-ripple"></button>
+      <div class="divider"></div>
+      <button id="sort-alpha-button" class="has-ripple has-gray-ripple"></button>
+      <div id="sort-indicator"></div>
+    </div>
+  </div>
+  
+  <div id="id-search-wrapper">
+    <div id="id-input-container">
+      <input type="text" id="id-input" placeholder=" " pattern="[0-9]*" maxlength="8">
+      <label for="id-input" class="placeholder-label">ID</label>
+    </div>
+    <div class="divider"></div>
+    <button id="id-copy-button" class="has-ripple">
+      <svg id="id-copy-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 10h2a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+      </svg>
+    </button>
+    <div class="divider"></div>
+    <button id="id-save-button" class="has-ripple">
+      <svg id="id-save-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 21V5q0-.825.588-1.413T7 3h10q.825 0 1.413.588T19 5v16l-7-3-7 3Z" />
+      </svg>
+    </button>
+  </div>
+  <button id="saved-words-toggle-button" class="has-ripple">
+    <svg id="saved-words-toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+</div>
+<div class="self-end flex items-center gap-2 h-8">
+  <div id="selection-count-indicator" class="h-full rounded-lg flex items-center justify-center px-4" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+    <span id="selection-count-text" style="color: var(--color-text-placeholder); font-size: 0.85rem; white-space: nowrap;"></span>
+  </div>
+  <div id="delete-button-wrapper" class="has-ripple">
+    <button id="delete-button">
+      <svg id="delete-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </button>
+  </div>
+</div>
+        <div id="saved-words-menu">
+            <ul id="saved-words-list"></ul>
+        </div>
+      </div>
+    </header>
+    <div id="mode-switcher"></div>
+    <main id="chat-container" class="w-full flex-1 overflow-y-auto chat-container px-4 pt-16" style="z-index: 1; position: relative; background-color: transparent;"></main>
+    <footer id="footer" class="absolute bottom-0 left-0 w-full bg-transparent px-4 pb-4 pt-2" style="z-index: 2;">
+      <form id="prompt-form" class="w-full">
+        <div id="input-container" class="h-14">
+          <div id="footer-indicator-container"></div>
+          <div id="autocomplete-ghost" class="absolute top-0 left-0 h-full w-full flex items-center pl-4 pr-4 pointer-events-none" style="z-index: 1; color: var(--color-text-placeholder);"></div>
+          <input type="text" id="chat-input" placeholder="" class="w-full h-full pl-4 pr-4 focus:outline-none" tabindex="1" autocomplete="off">
+          <button id="submit-button" type="submit" class="h-full w-14 focus:outline-none flex items-center justify-center has-ripple">
+            <svg id="submit-button-icon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"></svg>
+          </button>
+        </div>
+      </form>
+    </footer>
+  </div>
+  <script>
+    let vocabularyData = {};
+    let backlinksData = {};
+    let vocabularyLoadFailed = false;
+    
+    let savedWords = []; 
+    const SAVED_WORDS_STORAGE_KEY = 'bitiCache';
+    
+    let currentSortMode = 'time';
+
+    const form = document.getElementById('prompt-form');
+    const input = document.getElementById('chat-input');
+    const chatContainer = document.getElementById('chat-container');
+    const submitButton = document.getElementById('submit-button');
+    const submitButtonIcon = document.getElementById('submit-button-icon');
+    const footer = document.getElementById('footer');
+    const autocompleteGhost = document.getElementById('autocomplete-ghost');
+    const body = document.body;
+    const modeSwitcher = document.getElementById('mode-switcher');
+    const modeIcons = document.querySelectorAll('.mode-icon');
+    const textMeasureSpan = document.createElement('span');
+    const deleteButton = document.getElementById('delete-button');
+    const deleteButtonWrapper = document.getElementById('delete-button-wrapper');
+    const deleteIcon = document.getElementById('delete-icon');
+
+    const savedWordsToggleButton = document.getElementById('saved-words-toggle-button');
+    const savedWordsMenu = document.getElementById('saved-words-menu');
+    const savedWordsList = document.getElementById('saved-words-list');
+    
+    const idSearchWrapper = document.getElementById('id-search-wrapper');
+    const savedWordsSearchWrapper = document.getElementById('saved-words-search-wrapper');
+    const savedWordsSearchInput = document.getElementById('saved-words-search-input');
+    
+    // YENI: Yeni sıralama butonları ve gösterge elementleri
+    const sortTimeButton = document.getElementById('sort-time-button');
+    const sortAlphaButton = document.getElementById('sort-alpha-button');
+    const sortIndicator = document.getElementById('sort-indicator');
+
+
+    const ICONS = {
+      send: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 17V7m-5 5 5-5 5 5" />',
+      stop: '<path stroke-linecap="round" stroke-linejoin="round" d="M6 6h12v12H6z" />',
+      sortTime: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>',
+      sortAlpha: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" /></svg>'
+    };
+
+    let currentWord = '';
+    let currentSuggestion = '';
+    let isAITyping = false;
+    let isLoading = false;
+    let allowStop = false;
+    let typewriterInterval = null;
+    let thinkingTimeout = null;
+    let scrollAnimationId = null;
+    let liveScrollAnimationId = null;
+    let userHasScrolledUp = false;
+    let suggestionAnimationInterval = null;
+    let currentMatches = [];
+    let currentSuggestionIndex = 0;
+    
+    const displayModes = ['id-mode', 'timestamp-mode'];
+    let currentModeIndex = 0;
+
+    let selectionMouseDownPos = null;
+
+    function setupTextMeasureSpan() {
+      textMeasureSpan.style.position = 'absolute';
+      textMeasureSpan.style.visibility = 'hidden';
+      textMeasureSpan.style.height = 'auto';
+      textMeasureSpan.style.width = 'auto';
+      textMeasureSpan.style.whiteSpace = 'nowrap';
+      document.getElementById('app-container').appendChild(textMeasureSpan);
+    }
+
+    function handleIndicatorOverlap() {
+      const chatInput = document.getElementById('chat-input');
+      const indicatorContainer = document.getElementById('footer-indicator-container');
+      const indicator = indicatorContainer.querySelector('span');
+
+      if (!indicator || !chatInput.value) {
+        indicatorContainer.classList.remove('is-overlapped');
+        return;
+      }
+      const inputStyle = window.getComputedStyle(chatInput);
+      textMeasureSpan.style.font = inputStyle.font;
+      textMeasureSpan.textContent = chatInput.value;
+      const textWidth = textMeasureSpan.getBoundingClientRect().width;
+      const inputRect = chatInput.getBoundingClientRect();
+      const indicatorRect = indicator.getBoundingClientRect();
+      const textEndPosition = inputRect.left + parseFloat(inputStyle.paddingLeft) + textWidth;
+
+      if (textEndPosition > indicatorRect.left) {
+        indicatorContainer.classList.add('is-overlapped');
+      } else {
+        indicatorContainer.classList.remove('is-overlapped');
+      }
+    }
+
+    function interruptScrollAnimation() {
+      if (scrollAnimationId) {
+        cancelAnimationFrame(scrollAnimationId);
+        scrollAnimationId = null;
+      }
+    }
+
+    function smoothScrollToBottom(element, duration) {
+      interruptScrollAnimation();
+      const startPosition = element.scrollTop;
+      const endPosition = element.scrollHeight - element.clientHeight;
+      const distance = endPosition - startPosition;
+      if (distance <= 0) return;
+      let startTime = null;
+
+      function animationStep(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const elapsedTime = currentTime - startTime;
+        const t = Math.min(1, elapsedTime / duration);
+        const easedProgress = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        element.scrollTop = startPosition + (distance * easedProgress);
+        if (elapsedTime < duration) {
+          scrollAnimationId = requestAnimationFrame(animationStep);
+        } else {
+          element.scrollTop = endPosition;
+          scrollAnimationId = null;
+        }
+      }
+      scrollAnimationId = requestAnimationFrame(animationStep);
+    }
+
+    function liveSmoothScroll() {
+      if (!isAITyping || liveScrollAnimationId === null) {
+        liveScrollAnimationId = null;
+        return;
+      }
+      if (userHasScrolledUp) {
+        liveScrollAnimationId = requestAnimationFrame(liveSmoothScroll);
+        return;
+      }
+      const element = chatContainer;
+      const targetScrollTop = element.scrollHeight - element.clientHeight;
+      if (targetScrollTop <= 0) {
+        liveScrollAnimationId = requestAnimationFrame(liveSmoothScroll);
+        return;
+      }
+      const scrollDifference = targetScrollTop - element.scrollTop;
+      if (Math.abs(scrollDifference) > 1) {
+        element.scrollTop += scrollDifference * 0.1;
+      } else {
+        element.scrollTop = targetScrollTop;
+      }
+      liveScrollAnimationId = requestAnimationFrame(liveSmoothScroll);
+    }
+
+    function setViewportHeight() {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    function adjustChatContainerPadding() {
+      if (footer && chatContainer) {
+        const footerHeight = footer.offsetHeight;
+        chatContainer.style.paddingBottom = `${footerHeight-12}px`;
+      }
+    }
+
+    function updateSubmitButtonState() {
+        const isEmpty = input.value.trim() === '';
+        submitButton.disabled = false;
+        submitButton.classList.remove('empty-state', 'loading', 'disabled-loading');
+        submitButton.style.backgroundColor = '';
+        submitButton.style.color = '';
+
+        if (isLoading || isAITyping) {
+            submitButton.classList.add('loading');
+            submitButtonIcon.innerHTML = ICONS.stop;
+            if (isLoading || !allowStop) {
+                submitButton.disabled = true;
+                submitButton.classList.add('disabled-loading');
+            } else {
+                submitButton.disabled = false;
+                submitButton.classList.remove('disabled-loading');
+            }
+        } else {
+            if (isEmpty) {
+                submitButton.classList.add('empty-state');
+                submitButton.disabled = true;
+            } else {
+                submitButton.style.backgroundColor = 'var(--color-accent)';
+                submitButton.style.color = 'var(--color-bg-primary)';
+            }
+            submitButtonIcon.innerHTML = ICONS.send;
+        }
+    }
+
+    function initializePlaceholderAnimation() {
+      if (Object.keys(vocabularyData).length === 0) return;
+      const words = Object.keys(vocabularyData);
+      let currentIndex = -1;
+      const changePlaceholder = () => {
+        input.classList.add('hiding-placeholder');
+        setTimeout(() => {
+          let nextIndex;
+          do {
+            nextIndex = Math.floor(Math.random() * words.length);
+          } while (nextIndex === currentIndex);
+          currentIndex = nextIndex;
+          input.placeholder = words[currentIndex];
+          input.classList.remove('hiding-placeholder');
+        }, 500);
+      };
+      const firstIndex = Math.floor(Math.random() * words.length);
+      currentIndex = firstIndex;
+      input.placeholder = words[firstIndex];
+      setInterval(changePlaceholder, 3000);
+    }
+    
+    function initializeTitleAnimation() {
+        const aiTitle = document.getElementById('ai-title');
+        const chatContainer = document.getElementById('chat-container');
+        const headerControls = document.getElementById('header-controls');
+        const topRowControls = document.getElementById('top-row-controls');
+        const deleteButtonWrapper = document.getElementById('delete-button-wrapper');
+        const idInput = document.getElementById('id-input');
+        const INITIAL_SCALE = 1.0, FINAL_SCALE = 0.5, INITIAL_OPACITY = 1.0, FINAL_OPACITY = 0.5, SCROLL_THRESHOLD = 18;
+
+        function handleTitleScrollAnimation() {
+            if (!aiTitle || !chatContainer || !headerControls || !topRowControls || !deleteButtonWrapper) return;
+            const scrollTop = chatContainer.scrollTop;
+            const progress = Math.min(scrollTop / SCROLL_THRESHOLD, 1);
+            const newScale = INITIAL_SCALE - ((INITIAL_SCALE - FINAL_SCALE) * progress);
+            const newOpacity = INITIAL_OPACITY - ((INITIAL_OPACITY - FINAL_OPACITY) * progress);
+            
+            if (newOpacity < 1.0 && document.activeElement === idInput) {
+                idInput.blur();
+            }
+            
+            const FINAL_TRANSLATE_Y = -60;
+            const newTranslateY = progress * FINAL_TRANSLATE_Y;
+            
+            const isInteractive = newOpacity === 1.0;
+            topRowControls.style.pointerEvents = isInteractive ? 'auto' : 'none';
+
+            requestAnimationFrame(() => {
+                aiTitle.style.transform = `scale(${newScale})`;
+                aiTitle.style.opacity = newOpacity;
+                topRowControls.style.opacity = newOpacity;
+                headerControls.style.transform = `translateY(${newTranslateY}%)`;
+            });
+        }
+        chatContainer.addEventListener('scroll', handleTitleScrollAnimation);
+        handleTitleScrollAnimation();
+    }
+
+    function buildBacklinks(vocabulary) {
+      const newBacklinks = {};
+      for (const entryWord in vocabulary) {
+        const entryData = vocabulary[entryWord];
+        if (entryData.etymology) {
+          const etymologyLines = entryData.etymology.split('<br>');
+          for (const line of etymologyLines) {
+            const trimmedLine = line.trim();
+            let type = null;
+            let content = '';
+            if (trimmedLine.startsWith('<')) {
+              type = 'direct';
+              content = trimmedLine.substring(1);
+            }
+            if (type) {
+              const potentialWords = content.split(' ');
+              for (const pWord of potentialWords) {
+                const cleanWord = pWord.replace(/<[^>]*>/g, "").replace(/[.,!?]/g, '').trim();
+                if (cleanWord) {
+                  const lowerCleanWord = cleanWord.toLocaleLowerCase('tr-TR');
+                  if (!newBacklinks[lowerCleanWord]) {
+                    newBacklinks[lowerCleanWord] = { direct: [], related: [] };
+                  }
+                  if (!newBacklinks[lowerCleanWord][type].includes(entryWord)) {
+                    newBacklinks[lowerCleanWord][type].push(entryWord);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      backlinksData = newBacklinks;
+    }
+
+    function handleTruncatedScroll(e) {
+      const p = e.target;
+      if (!p || !p.closest('.message-bubble.truncated')) return;
+      const bubble = p.closest('.message-bubble.truncated');
+      const buffer = 5;
+      if (p.scrollTop > buffer) {
+        bubble.classList.add('scrolled-past-top');
+      } else {
+        bubble.classList.remove('scrolled-past-top');
+      }
+      const isAtBottom = p.scrollHeight - p.scrollTop - p.clientHeight < buffer;
+      if (isAtBottom) {
+        bubble.classList.add('scrolled-to-bottom');
+      } else {
+        bubble.classList.remove('scrolled-to-bottom');
+      }
+    }
+
+    function initializeDragToScroll() {
+      const container = document.getElementById('chat-container');
+      let isDragging = false;
+      let draggedElement = null;
+      let startY;
+      let startScrollTop;
+      container.addEventListener('scroll', handleTruncatedScroll, true);
+
+      function handleDragStart(e) {
+        const p = e.target.closest('.message-bubble.truncated p');
+        if (p && p.scrollHeight > p.clientHeight) {
+          isDragging = true;
+          draggedElement = p;
+          startY = e.touches ? e.touches[0].pageY : e.pageY;
+          startScrollTop = p.scrollTop;
+          container.classList.add('is-dragging');
+        }
+      }
+
+      function handleDragMove(e) {
+        if (!isDragging || !draggedElement) return;
+        const currentY = e.touches ? e.touches[0].pageY : e.pageY;
+        const deltaY = currentY - startY;
+        draggedElement.scrollTop = startScrollTop - deltaY;
+      }
+
+      function handleDragEnd() {
+        if (isDragging) {
+          isDragging = false;
+          draggedElement = null;
+          container.classList.remove('is-dragging');
+        }
+      }
+      container.addEventListener('mousedown', handleDragStart);
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      container.addEventListener('touchstart', handleDragStart, { passive: true });
+      window.addEventListener('touchmove', handleDragMove, { passive: true });
+      window.addEventListener('touchend', handleDragEnd);
+    }
+    
+    function updateActiveModeIcon() {
+      const currentMode = displayModes[currentModeIndex];
+      modeIcons.forEach(icon => {
+        icon.classList.toggle('active', icon.dataset.mode === currentMode);
+      });
+    }
+
+    function switchMode() {
+      currentModeIndex = (currentModeIndex + 1) % displayModes.length;
+      const newMode = displayModes[currentModeIndex];
+      body.className = newMode;
+      updateActiveModeIcon();
+    }
+    
+    function initializeModeSwitcher() {
+      let pullStartY = 0;
+      let pullDeltaY = 0;
+      let isPulling = false;
+      const PULL_THRESHOLD = 350;
+      chatContainer.addEventListener('touchstart', (e) => {
+        if (chatContainer.scrollTop === 0) {
+          isPulling = true;
+          pullStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+      chatContainer.addEventListener('touchmove', (e) => {
+        if (!isPulling) return;
+        pullDeltaY = e.touches[0].clientY - pullStartY;
+        if (pullDeltaY > 0) {
+          const opacity = Math.min(pullDeltaY / PULL_THRESHOLD, 1);
+          modeSwitcher.style.opacity = opacity;
+          const nextModeIndex = (currentModeIndex + 1) % displayModes.length;
+          const nextMode = displayModes[nextModeIndex];
+          modeIcons.forEach(icon => {
+            const isActive = icon.dataset.mode === nextMode;
+            icon.classList.toggle('active', isActive);
+            if (isActive) {
+              const glowIntensity = Math.min(pullDeltaY / (PULL_THRESHOLD * 1.5), 1);
+              icon.style.animation = 'none';
+              icon.style.textShadow = `0 0 ${5 * glowIntensity}px #ff00ff, 0 0 ${10 * glowIntensity}px #ff00ff, 0 0 ${15 * glowIntensity}px #00ffff`;
+            }
+          });
+        }
+      }, { passive: true });
+      chatContainer.addEventListener('touchend', () => {
+        if (isPulling && pullDeltaY > PULL_THRESHOLD) {
+          switchMode();
+        }
+        isPulling = false;
+        pullDeltaY = 0;
+        modeSwitcher.style.opacity = 0;
+        modeIcons.forEach(icon => {
+          icon.style.textShadow = '';
+          icon.style.animation = '';
+        });
+        updateActiveModeIcon();
+      });
+      updateActiveModeIcon();
+    }
+
+    function positionSavedWordsMenu() {
+        const headerControls = document.getElementById('header-controls');
+        const topRowControls = document.getElementById('top-row-controls');
+        const deleteButtonWrapper = document.getElementById('delete-button-wrapper');
+
+        if (!headerControls || !topRowControls || !deleteButtonWrapper) return;
+        
+        const headerRect = headerControls.getBoundingClientRect();
+        const topRowRect = topRowControls.getBoundingClientRect();
+        const deleteRect = deleteButtonWrapper.getBoundingClientRect();
+        
+        savedWordsMenu.style.top = `${deleteRect.top - headerRect.top}px`;
+        savedWordsMenu.style.left = `${topRowRect.left - headerRect.left}px`;
+        savedWordsMenu.style.width = `${topRowRect.width}px`;
+    }
+
+    function populateSavedWordsList() {
+        // 1. Get the primary filter query from the main chat input
+        const mainQuery = input.value.toLowerCase();
+        
+        savedWordsList.innerHTML = '';
+        
+        // 2. Filter saved words based on the main query (starts with)
+        let wordsToRender = [...savedWords].filter(item => 
+            item.word.toLowerCase().startsWith(mainQuery)
+        );
+
+        // Keep existing sorting logic
+        if (currentSortMode === 'time') {
+            wordsToRender.sort((a, b) => b.timestamp - a.timestamp);
+        } else { 
+            wordsToRender.sort((a, b) => a.word.localeCompare(b.word));
+        }
+        
+        // Keep existing logic for calculating menu height
+        const tempLi = document.createElement('li');
+        tempLi.textContent = 'Test';
+        tempLi.style.padding = '0.45rem 1rem';
+        tempLi.style.fontSize = '0.95rem';
+        tempLi.style.visibility = 'hidden';
+        tempLi.style.position = 'absolute';
+        savedWordsList.appendChild(tempLi);
+        
+        const itemHeight = tempLi.getBoundingClientRect().height;
+        savedWordsList.removeChild(tempLi);
+        const finalItemHeight = itemHeight > 0 ? itemHeight : 30;
+        
+        if (wordsToRender.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = mainQuery ? 'No matching saves.' : 'No saves yet.';
+            li.style.color = 'var(--color-text-primary)';
+            li.style.textAlign = 'center';
+            li.style.cursor = 'default';
+            savedWordsList.appendChild(li);
+            savedWordsMenu.style.maxHeight = `${finalItemHeight}px`;
+            return;
+        }
+        
+        const displayCount = Math.min(wordsToRender.length, 6);
+        savedWordsMenu.style.maxHeight = `${displayCount * finalItemHeight}px`;
+        
+        // 3. Create list items with highlighting
+        wordsToRender.forEach(item => {
+            const li = document.createElement('li');
+            const word = item.word;
+
+            if (mainQuery.length > 0) {
+                const matchPart = word.substring(0, mainQuery.length);
+                const restPart = word.substring(mainQuery.length);
+                li.innerHTML = `<span style="color: var(--color-text-placeholder);">${matchPart}</span>${restPart}`;
+            } else {
+                li.textContent = word;
+            }
+
+            li.dataset.word = word;
+            li.classList.add('has-ripple', 'has-gray-ripple');
+            savedWordsList.appendChild(li);
+        });
+    }
+
+    function closeSavedWordsMenu() {
+        if (savedWordsMenu.classList.contains('is-open')) {
+            savedWordsMenu.classList.remove('is-open');
+            savedWordsToggleButton.classList.remove('toggled');
+            
+            idSearchWrapper.style.display = 'flex';
+            savedWordsSearchWrapper.style.display = 'none';
+            savedWordsSearchInput.value = '';
+            filterSavedWords();
+        }
+    }
+    
+    // YENI: Kayan çizgiyi güncellemek için fonksiyon
+    function updateSortIndicator() {
+      const activeButton = currentSortMode === 'time' ? sortTimeButton : sortAlphaButton;
+      const parentRect = activeButton.parentElement.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+      
+      // --- YENİ ve EVRENSEL YÖNTEM ---
+      
+      // 1. Hedef oranı belirleyin. (Örn: 0.6 = butonun %60'ı genişliğinde olsun)
+      const hedefOran = 0.5;
+      
+      // 2. Çizginin yeni genişliğini butonun genişliğine göre orantılı hesaplayın.
+      const yeniGenislik = buttonRect.width * hedefOran;
+      
+      // 3. Çizgiyi ortalamak için soldan ne kadar boşluk bırakılacağını hesaplayın.
+      //    (Buton genişliği ile çizgi genişliği arasındaki farkın yarısı kadar)
+      const solBosluk = (buttonRect.width - yeniGenislik) / 2;
+      const left = (buttonRect.left - parentRect.left) + solBosluk;
+      
+      sortIndicator.style.left = `${left}px`;
+      sortIndicator.style.width = `${yeniGenislik}px`;
+    }
+
+    function openSavedWordsMenu() {
+        if (!savedWordsMenu.classList.contains('is-open')) {
+            idSearchWrapper.style.display = 'none';
+            savedWordsSearchWrapper.style.display = 'flex';
+            
+            positionSavedWordsMenu();
+            populateSavedWordsList();
+            savedWordsMenu.classList.add('is-open');
+            savedWordsToggleButton.classList.add('toggled');
+
+            // Menü açıldığında göstergeyi doğru konuma ayarla
+            updateSortIndicator();
+        }
+    }
+
+    function filterSavedWords() {
+      // Fonksiyonun başında, önceki aramadan kalan "eşleşme yok" mesajını temizle
+      const existingNoMatchLi = savedWordsList.querySelector('.no-match-message');
+      if (existingNoMatchLi) {
+        existingNoMatchLi.remove();
+      }
+      
+      const query = savedWordsSearchInput.value.toLowerCase();
+      const items = savedWordsList.getElementsByTagName('li');
+      let matchCount = 0; // Eşleşme sayacını başlat
+      
+      for (let i = 0; i < items.length; i++) {
+        const word = items[i].dataset.word;
+        if (word) {
+          if (word.toLowerCase().includes(query)) {
+            items[i].classList.remove('hidden');
+            matchCount++; // Eşleşme bulunduğunda sayacı artır
+          } else {
+            items[i].classList.add('hidden');
+          }
+        }
+      }
+      
+      // Döngü bittikten sonra, eğer hiç eşleşme bulunamadıysa ve arama kutusu boş değilse mesajı göster
+      if (matchCount === 0 && query.trim() !== '') {
+        const li = document.createElement('li');
+        li.textContent = 'No match found.'; // "Not math found" yerine doğru metin
+        li.className = 'no-match-message'; // Kolayca bulup silebilmek için bir sınıf ata
+        li.style.color = 'var(--color-white)'; // "No saves yet" gibi soluk bir renk kullan
+        li.style.textAlign = 'center';
+        li.style.cursor = 'default';
+        savedWordsList.appendChild(li);
+      }
+    }
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setViewportHeight();
+      adjustChatContainerPadding();
+      initializeTitleAnimation();
+      initializeRippleEffect();
+      initializeDragToScroll();
+      initializeSelectionHandling();
+      initializeOverscrollEffect();
+      initializeModeSwitcher();
+      setupTextMeasureSpan();
+      input.disabled = true;
+      updateSubmitButtonState();
+      
+      loadSavedWords();
+
+      // YENI: Buton ikonlarını başlangıçta ayarla
+      sortTimeButton.innerHTML = ICONS.sortTime;
+      sortAlphaButton.innerHTML = ICONS.sortAlpha;
+      
+      const header = document.querySelector('header');
+      const idInput = document.getElementById('id-input');
+      const idCopyButton = document.getElementById('id-copy-button');
+      const idSaveButton = document.getElementById('id-save-button');
+
+      idSaveButton.addEventListener('click', handleSaveButtonClick);
+      
+      savedWordsSearchInput.addEventListener('input', filterSavedWords);
+      
+      // CHANGE 3: Add mousedown listeners to prevent sort buttons from stealing focus
+      sortTimeButton.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+      });
+      sortAlphaButton.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+      });
+
+      // YENI: İki buton için ayrı olay dinleyiciler
+      sortTimeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentSortMode === 'time') return;
+        currentSortMode = 'time';
+        populateSavedWordsList();
+        updateSortIndicator();
+        filterSavedWords(); // DÜZELTME: Filtreyi yeniden uygula
+      });
+
+      sortAlphaButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (currentSortMode === 'alpha') return;
+        currentSortMode = 'alpha';
+        populateSavedWordsList();
+        updateSortIndicator();
+        filterSavedWords(); // DÜZELTME: Filtreyi yeniden uygula
+      });
+
+      header.addEventListener('click', (e) => {
+          if (e.target.closest('#delete-button-wrapper') || e.target.closest('#top-row-controls') || e.target.closest('#saved-words-menu')) {
+            return;
+          }
+          if (chatContainer.scrollTop > 0) {
+            chatContainer.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+      });
+      
+      savedWordsToggleButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (savedWordsMenu.classList.contains('is-open')) {
+              closeSavedWordsMenu();
+          } else {
+              openSavedWordsMenu();
+          }
+      });
+
+      savedWordsList.addEventListener('click', (e) => {
+          const listItem = e.target.closest('li');
+          if (listItem && listItem.dataset.word) {
+              // 3. Change behavior to fill the message bar
+              input.value = listItem.dataset.word;
+              // Set focus back to the inpu
+              // Trigger an input event to update submit button state, etc.
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+              closeSavedWordsMenu();
+          }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!savedWordsMenu.contains(e.target) && !savedWordsToggleButton.contains(e.target) && !savedWordsSearchWrapper.contains(e.target)) {
+            closeSavedWordsMenu();
+        }
+      });
+
+      chatContainer.addEventListener('scroll', () => {
+        const buffer = 50;
+        const isAtBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < buffer;
+        userHasScrolledUp = !isAtBottom;
+        closeSavedWordsMenu();
+      }, { passive: true });
+
+      idInput.addEventListener('input', () => {
+        idInput.value = idInput.value.replace(/[^0-9]/g, '');
+        updateSaveIconStateForCurrentId();
+      });
+
+      idCopyButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (idCopyButton.disabled) return;
+          
+          const id = idInput.value;
+          if (!id) return;
+          
+          if (Object.keys(vocabularyData).length === 0) {
+            flashIcon('red', 'id-copy-icon');
+            return;
+          }
+          
+          const entry = Object.values(vocabularyData).find(e => e.vocabId == id);
+          
+          if (entry) {
+            flashIcon('thinking', 'id-copy-icon');
+            idInput.value = '';
+            updateSaveIconStateForCurrentId();
+            
+            const word = Object.keys(vocabularyData).find(key => vocabularyData[key].vocabId == id);
+            
+            const hasEtymology = entry.etymology && entry.etymology.trim() !== '';
+            
+            let header = `${entry.language} ${word} “${getCleanMeaning(entry.meaning)}”`;
+            if (hasEtymology) {
+              header += ' is';
+            }
+            
+            let etymologyString = '';
+            if (hasEtymology) {
+              const linkedWordsDetails = [];
+              const uniquePotentialWords = new Set();
+              const etymologyWords = entry.etymology.replace(/<br>/g, ' ').split(' ');
+              
+              for (const etymWord of etymologyWords) {
+                const cleanWord = etymWord.replace(/<[^>]*>/g, "").replace(/[.,!?]/g, '').trim();
+                if (cleanWord) {
+                  uniquePotentialWords.add(cleanWord);
+                }
+              }
+              
+              for (const potentialWord of uniquePotentialWords) {
+                const linkedEntry = findWordEntry(potentialWord);
+                if (linkedEntry) {
+                  const linkedWordKey = Object.keys(vocabularyData).find(key => vocabularyData[key] === linkedEntry);
+                  if (linkedWordKey && !linkedWordsDetails.some(d => d.word === linkedWordKey)) {
+                    linkedWordsDetails.push({
+                      word: linkedWordKey,
+                      language: linkedEntry.language,
+                      meaning: linkedEntry.meaning
+                    });
+                  }
+                }
+              }
+              
+              const numLinks = linkedWordsDetails.length;
+              if (numLinks === 1) {
+                const link = linkedWordsDetails[0];
+                etymologyString = `derived from ${link.language} ${link.word} “${getCleanMeaning(link.meaning)}”.`;
+              } else if (numLinks > 1) {
+                const firstLang = linkedWordsDetails[0].language;
+                const allSameLang = linkedWordsDetails.every(link => link.language === firstLang);
+                
+                let formattedWordList;
+                if (allSameLang) {
+                  const wordList = linkedWordsDetails.map(link => `${link.word} “${getCleanMeaning(link.meaning)}”`);
+                  formattedWordList = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(wordList);
+                  etymologyString = `formed from ${firstLang} ${formattedWordList}.`;
+                } else {
+                  const wordLangPairs = linkedWordsDetails.map(link => `${link.language} ${link.word} “${getCleanMeaning(link.meaning)}”`);
+                  formattedWordList = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' }).format(wordLangPairs);
+                  etymologyString = `formed from ${formattedWordList}.`;
+                }
+              }
+            }
+            
+            let firstLine = header;
+            if (etymologyString) {
+              firstLine += ` ${etymologyString}`;
+            }
+            
+            const parts = [firstLine];
+            
+            const comment = entry.comment || '';
+            if (comment.trim() !== '') {
+              parts.push(`Note: ${comment}`);
+            }
+            
+            const sourceURL = 'bitionary.vercel.app';
+            parts.push(`Source: ${sourceURL}`);
+            
+            const textToCopy = parts.join('\n\n');
+            
+            copyToClipboard(textToCopy.trim()).catch(() => {});
+            
+          } else {
+            flashIcon('red', 'id-copy-icon');
+          }
+      });
+      
+      deleteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const messagesToDelete = document.querySelectorAll('.message-wrapper.selected-for-deletion');
+        
+        if (messagesToDelete.length === 0) {
+            return;
+        }
+
+        deleteButtonWrapper.classList.remove('selected');
+        deleteButtonWrapper.classList.add('deselected-animating');
+        deleteButtonWrapper.addEventListener('animationend', () => {
+            deleteButtonWrapper.classList.remove('deselected-animating');
+            deleteButtonWrapper.style.backgroundImage = '';
+            deleteButtonWrapper.style.backgroundSize = '';
+        }, { once: true });
+
+        let animatedCount = messagesToDelete.length;
+        messagesToDelete.forEach(msg => {
+            if (msg.classList.contains('is-awaiting-response')) {
+                 stopAll();
+            }
+            msg.classList.add('deleting');
+            
+            const onAnimationEnd = () => {
+                msg.remove();
+                animatedCount--;
+                if (animatedCount === 0) {
+                    updateLanguageTagOnScroll();
+                    updateDeleteButtonState(); 
+                }
+                msg.removeEventListener('transitionend', onAnimationEnd);
+            };
+            msg.addEventListener('transitionend', onAnimationEnd);
+        });
+      });
+
+      function flashIcon(state, elementId) {
+        let flashColor;
+        const iconElement = document.getElementById(elementId);
+        if(!iconElement) return;
+
+        if (state === 'red') {
+          flashColor = 'var(--color-error)';
+        } else if (state === 'thinking') {
+          flashColor = 'var(--color-accent-info)';
+        }
+         else {
+          return;
+        }
+        const originalColor = iconElement.style.color || 'var(--color-text-primary)';
+        iconElement.style.color = flashColor;
+        setTimeout(() => {
+          iconElement.style.color = originalColor;
+        }, 400);
+      }
+
+      fetch('vocabulary.json')
+        .then(response => { if (!response.ok) throw new Error(); return response.json(); })
+        .then(data => {
+          Object.keys(data).forEach((key, index) => {
+            data[key].vocabId = index + 1;
+          });
+          vocabularyData = data;
+          buildBacklinks(vocabularyData);
+          input.disabled = false;
+          updateSubmitButtonState();
+          initializePlaceholderAnimation();
+          const initialMessageElementWrapper = displayMessage("", "ai", { isWelcome: true });
+          const p = initialMessageElementWrapper.querySelector('p');
+          p.dataset.language = 'welcome';
+          typewriterEffect(p, "As a linguistic companion harboring <i>thousands</i> of morphemes, meanings, sources, and annotations within me, I stand ready to accompany your archaeological excavation through the depths of Proto-Turkic.");
+        }).catch(() => {});
+      chatContainer.addEventListener('scroll', updateLanguageTagOnScroll);
+    });
+
+    window.addEventListener('resize', () => {
+      setViewportHeight();
+      adjustChatContainerPadding();
+      if (savedWordsMenu.classList.contains('is-open')) {
+        positionSavedWordsMenu();
+        // Pencere yeniden boyutlandırıldığında göstergeyi yeniden ayarla
+        updateSortIndicator();
+      }
+    });
+
+    // MODIFIED: This function contains all the requested fixes.
+    function updateDeleteButtonState() {
+      const selectionIndicator = document.getElementById('selection-count-indicator');
+      const selectionText = document.getElementById('selection-count-text');
+      const selectedMessages = document.querySelectorAll('.message-wrapper.selected-for-deletion');
+      const selectionCount = selectedMessages.length;
+      const idBar = document.getElementById('id-search-wrapper');
+      const savedWordsBar = document.getElementById('saved-words-search-wrapper');
+
+      // Toggle the visual state of the delete button
+      deleteButtonWrapper.classList.toggle('selected', selectionCount > 0);
+
+      // Control the visibility and content of the new selection counter
+      if (selectionCount > 0) {
+        // Fix #2: Determine which bar is visible to get the correct width
+        const referenceBar = idBar.offsetParent !== null ? idBar : savedWordsBar;
+        if (referenceBar) {
+            selectionIndicator.style.width = `${referenceBar.offsetWidth}px`;
+        }
+
+        // Fix #1: Show half the number of selected messages
+        const displayCount = selectionCount / 2;
+        const pluralS = displayCount !== 1 ? 's' : '';
+        selectionText.textContent = `${displayCount} Message${pluralS} Selected`;
+
+        // Fix #3: Animate appearance by adding a class
+        selectionIndicator.classList.add('visible');
+      } else {
+        // Fix #3: Animate disappearance by removing the class
+        selectionIndicator.classList.remove('visible');
+      }
+    }
+    
+    function initializeSelectionHandling() {
+        chatContainer.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.user-message .message-bubble')) {
+                 selectionMouseDownPos = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        chatContainer.addEventListener('mouseup', (e) => {
+            if (!selectionMouseDownPos) return;
+
+            const dx = e.clientX - selectionMouseDownPos.x;
+            const dy = e.clientY - selectionMouseDownPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const messageBubble = e.target.closest('.user-message .message-bubble');
+            
+            if (distance < 5 && messageBubble) {
+                const messageWrapper = messageBubble.closest('.message-wrapper.user-message');
+                if (!messageWrapper) return;
+
+                if (e.target.closest('a, button')) return;
+
+                const isSelected = messageWrapper.classList.toggle('selected-for-deletion');
+                const nextSibling = messageWrapper.nextElementSibling;
+
+                if (nextSibling && nextSibling.classList.contains('ai-message')) {
+                    nextSibling.classList.toggle('selected-for-deletion', isSelected);
+                }
+                updateDeleteButtonState();
+            }
+            selectionMouseDownPos = null;
+        });
+    }
+
+    function processWordSubmission(word) {
+      const trimmedWord = word.trim();
+      if (!trimmedWord) return;
+      userHasScrolledUp = false;
+      clearInterval(suggestionAnimationInterval);
+      autocompleteGhost.textContent = '';
+      currentSuggestion = '';
+      const userMessage = displayMessage(trimmedWord, 'user');
+      currentWord = trimmedWord;
+      getAIResponse(currentWord, userMessage);
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (input.disabled || submitButton.disabled) return;
+      if (isLoading || isAITyping) {
+        stopAll();
+        return;
+      }
+      const wordFromInput = input.value.trim();
+      if (wordFromInput === '') return;
+      processWordSubmission(wordFromInput);
+      input.value = '';
+      updateSubmitButtonState();
+      handleIndicatorOverlap();
+    });
+
+    input.addEventListener('input', () => {
+        updateSubmitButtonState();
+        handleAutocomplete();
+        handleIndicatorOverlap();
+        // If the saved words menu is open, update its contents
+        if (savedWordsMenu.classList.contains('is-open')) {
+            populateSavedWordsList();
+            // After repopulating based on the main input, re-apply the secondary filter
+            filterSavedWords(); 
+        }
+    });
+
+    function animateSuggestion() {
+      autocompleteGhost.classList.add('fading');
+      setTimeout(() => {
+        if (currentMatches.length === 0) return;
+        const nextSuggestion = currentMatches[currentSuggestionIndex];
+        currentSuggestion = nextSuggestion;
+        autocompleteGhost.textContent = currentSuggestion;
+        currentSuggestionIndex = (currentSuggestionIndex + 1) % currentMatches.length;
+        autocompleteGhost.classList.remove('fading');
+      }, 300);
+    }
+
+    function handleAutocomplete() {
+      clearInterval(suggestionAnimationInterval);
+      autocompleteGhost.classList.remove('fading');
+      const typedText = input.value;
+      if (typedText.trim() === '' || Object.keys(vocabularyData).length === 0) {
+        autocompleteGhost.textContent = '';
+        currentSuggestion = '';
+        currentMatches = [];
+        return;
+      }
+      const lowerTypedText = typedText.toLocaleLowerCase('tr-TR');
+      // CHANGE 2: Make autocomplete case-insensitive
+      currentMatches = Object.keys(vocabularyData).filter(
+        key => key.toLocaleLowerCase('tr-TR').startsWith(lowerTypedText) && key.toLocaleLowerCase('tr-TR') !== lowerTypedText
+      );
+      if (currentMatches.length > 0) {
+        currentSuggestionIndex = 0;
+        animateSuggestion();
+        if (currentMatches.length > 1) {
+          suggestionAnimationInterval = setInterval(animateSuggestion, 2000);
+        }
+      } else {
+        autocompleteGhost.textContent = '';
+        currentSuggestion = '';
+      }
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if ((e.key === 'Tab' || e.key === 'ArrowRight') && currentSuggestion) {
+        if (input.selectionStart === input.value.length) {
+          e.preventDefault();
+          clearInterval(suggestionAnimationInterval);
+          input.value = currentSuggestion;
+          currentSuggestion = '';
+          autocompleteGhost.textContent = '';
+          input.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+
+    function copyToClipboard(text) {
+      let ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed"; ta.style.top = 0; ta.style.left = 0; ta.style.width = "1px"; ta.style.height = "1px"; ta.style.padding = 0; ta.style.border = "none"; ta.style.outline = "none"; ta.style.boxShadow = "none"; ta.style.background = "transparent";
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      return new Promise((res, rej) => {
+        try {
+          document.execCommand('copy') ? res() : rej(new Error());
+        } catch (err) {
+          rej(err);
+        } finally {
+          document.body.removeChild(ta);
+        }
+      });
+    }
+
+    function handleCopyCommand() {
+      const allAiMessages = Array.from(document.querySelectorAll('.ai-message .message-bubble p'));
+      if (allAiMessages.length === 0) {
+        return Promise.reject(new Error());
+      }
+      let targetMessage = allAiMessages.slice().reverse().find(p => p.dataset.messageType === 'definition') || allAiMessages[allAiMessages.length - 1];
+      const clone = targetMessage.cloneNode(true);
+      clone.querySelectorAll('.suggestion-link').forEach(link => link.remove());
+      clone.querySelectorAll('.comment-section').forEach(comment => comment.remove());
+      const textToCopy = clone.innerText;
+      return copyToClipboard(textToCopy.trim());
+    }
+
+    function initializeRippleEffect() {
+      document.body.addEventListener('mousedown', applyRippleEffect);
+      document.body.addEventListener('touchstart', applyRippleEffect, { passive: true });
+    }
+
+    function applyRippleEffect(e) {
+      const button = e.target.closest('.has-ripple');
+      if (!button || button.disabled) return;
+
+      button.querySelector(".ripple")?.remove();
+      const circle = document.createElement("span");
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      const radius = diameter / 2;
+      const rect = button.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${clientX - rect.left - radius}px`;
+      circle.style.top = `${clientY - rect.top - radius}px`;
+      circle.classList.add("ripple");
+      button.appendChild(circle);
+      setTimeout(() => circle.remove(), 600);
+    }
+
+    document.addEventListener('click', function (e) {
+      const suggestionLink = e.target.closest('.suggestion-link');
+      if (suggestionLink) {
+        e.preventDefault();
+        if (isLoading || isAITyping || input.disabled) return;
+        chatContainer.classList.add('is-loading');
+        processWordSubmission(suggestionLink.dataset.word);
+      }
+    });
+
+    function displayMessage(text, sender, options = {}) {
+      const { isWelcome = false } = options;
+      const wrapper = document.createElement('div');
+      wrapper.className = `message-wrapper ${sender === 'user' ? 'user-message' : 'ai-message'}`;
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'message-content-wrapper';
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      const p = document.createElement('p');
+      p.innerHTML = sender === 'user' ? text : p.innerHTML = text;
+      bubble.appendChild(p);
+      const idSpan = document.createElement('span');
+      idSpan.className = 'message-meta meta-id';
+      wrapper.appendChild(idSpan);
+
+      if (sender === 'ai' && !isWelcome) {
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-meta meta-timestamp';
+        const now = new Date();
+        timeSpan.textContent = now.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        wrapper.appendChild(timeSpan);
+      }
+      contentWrapper.appendChild(bubble);
+      wrapper.appendChild(contentWrapper);
+      chatContainer.appendChild(wrapper);
+
+      if (sender === 'user') {
+        const pStyle = window.getComputedStyle(p);
+        const lineHeight = parseFloat(pStyle.lineHeight) || (parseFloat(pStyle.fontSize) * 1.5);
+        const maxHeight = lineHeight * 5.1;
+        if (p.scrollHeight > maxHeight) {
+          bubble.classList.add('truncated');
+          const readMore = document.createElement('div');
+          readMore.className = 'read-more-indicator';
+          readMore.innerHTML = '<span class="material-symbols-outlined">more_horiz</span>';
+          bubble.appendChild(readMore);
+        }
+      }
+      smoothScrollToBottom(chatContainer, 400);
+      return wrapper;
+    }
+
+    function typewriterEffect(el, txt, onComplete) {
+      if (!txt) {
+        el.innerHTML = "<span class='italic text-gray-500'>Information not found.</span>";
+        if (onComplete) onComplete();
+        return;
+      }
+      stopAll();
+      isAITyping = true;
+      chatContainer.classList.add('ai-is-typing');
+      updateSubmitButtonState();
+      updateLanguageTagOnScroll();
+      if (liveScrollAnimationId === null) liveScrollAnimationId = requestAnimationFrame(liveSmoothScroll);
+      let i = 0;
+      let currentVisibleText = "";
+      const cursorSpan = '<span class="typing-cursor">●</span>';
+      el.innerHTML = cursorSpan;
+      typewriterInterval = setInterval(() => {
+        if(el.closest('.message-wrapper.deleting')) {
+            stopAll();
+            return;
+        }
+
+        if (i === 0 && txt.length > 0) {
+            allowStop = true;
+            updateSubmitButtonState();
+        }
+
+        if (i < txt.length) {
+          if (txt.charAt(i) === '<') {
+            const endIndex = txt.indexOf('>', i);
+            currentVisibleText += txt.substring(i, endIndex !== -1 ? endIndex + 1 : txt.length);
+            i = endIndex !== -1 ? endIndex : txt.length - 1;
+          } else {
+            currentVisibleText += txt.charAt(i);
+          }
+          i++;
+          el.innerHTML = currentVisibleText + cursorSpan;
+        } else {
+          el.innerHTML = currentVisibleText;
+          stopAll();
+          if (onComplete) onComplete();
+        }
+      }, 35);
+    }
+
+    function stopAll() {
+      if (typewriterInterval) clearInterval(typewriterInterval);
+      if (thinkingTimeout) clearTimeout(thinkingTimeout);
+      if (liveScrollAnimationId) cancelAnimationFrame(liveScrollAnimationId);
+      typewriterInterval = null;
+      thinkingTimeout = null;
+      liveScrollAnimationId = null;
+      allowStop = false;
+      
+      const loadingMessage = chatContainer.querySelector('.is-awaiting-response .loading-dots');
+      if (loadingMessage) {
+        const wrapper = loadingMessage.closest('.message-wrapper');
+        if (wrapper) wrapper.remove();
+      }
+      
+      document.querySelector('.typing-cursor')?.remove();
+      isLoading = false;
+      isAITyping = false;
+      chatContainer.classList.remove('is-loading', 'ai-is-typing');
+      const awaiting = document.querySelector('.is-awaiting-response');
+      if(awaiting) awaiting.classList.remove('is-awaiting-response');
+
+      updateSubmitButtonState();
+      updateLanguageTagOnScroll();
+    }
+
+    // CHANGE 2: Make word lookup case-insensitive
+    function findWordEntry(word) {
+      const lowerWord = word.toLocaleLowerCase('tr-TR');
+      
+      const foundKey = Object.keys(vocabularyData).find(key => key.toLocaleLowerCase('tr-TR') === lowerWord);
+      if (foundKey) return vocabularyData[foundKey];
+    
+      for (const key in vocabularyData) {
+        const entry = vocabularyData[key];
+        if (entry.alternatives?.map(a => a.toLocaleLowerCase('tr-TR')).includes(lowerWord)) return entry;
+      }
+      
+      return null;
+    }
+
+    let lastKnownVisibleLanguage = null;
+
+    function updateLanguageTagOnScroll() {
+      const footerIndicatorContainer = document.getElementById('footer-indicator-container');
+      const messagesWithLang = document.querySelectorAll('.ai-message .message-bubble p[data-language]');
+      const containerRect = chatContainer.getBoundingClientRect();
+      let lastVisibleMessage = null;
+
+      for (let i = messagesWithLang.length - 1; i >= 0; i--) {
+        const msg = messagesWithLang[i];
+        if (msg.closest('.message-wrapper.deleting')) continue;
+        
+        const msgRect = msg.getBoundingClientRect();
+        if (msgRect.top < containerRect.bottom && msgRect.bottom > containerRect.top) {
+          lastVisibleMessage = msg;
+          break;
+        }
+      }
+      
+      const targetLanguage = lastVisibleMessage ? lastVisibleMessage.dataset.language : null;
+      let finalIndicatorState = targetLanguage;
+
+      if (isLoading && !userHasScrolledUp) {
+        finalIndicatorState = 'thinking';
+      }
+
+      if (finalIndicatorState !== lastKnownVisibleLanguage) {
+        footerIndicatorContainer.innerHTML = '';
+        if (finalIndicatorState) {
+          const languageTag = document.createElement('span');
+          let tagClass = '';
+          if (finalIndicatorState === 'thinking') {
+            tagClass = 'thinking-indicator';
+          } else if (finalIndicatorState === 'system') {
+            tagClass = 'system-indicator';
+          } else if (finalIndicatorState === 'welcome') {
+            tagClass = 'welcome-indicator';
+          } else {
+            tagClass = 'language-info';
+          }
+          languageTag.className = `${tagClass} tag-anim-in`;
+          languageTag.textContent = finalIndicatorState;
+          footerIndicatorContainer.appendChild(languageTag);
+        }
+        lastKnownVisibleLanguage = finalIndicatorState;
+        setTimeout(handleIndicatorOverlap, 50);
+      }
+    }
+
+    function animateCommentSection(commentContainer) {
+      const commentWords = Array.from(commentContainer.querySelectorAll('.comment-word'));
+      if (commentWords.length === 0) return;
+      commentContainer.classList.add('visible');
+      let delay = 50;
+      const delayIncrement = 50;
+      commentWords.forEach(word => {
+        setTimeout(() => {
+          word.classList.add('visible');
+        }, delay);
+        delay += delayIncrement;
+      });
+      const totalDuration = delay;
+      setTimeout(() => smoothScrollToBottom(chatContainer, 300), totalDuration);
+    }
+    
+    function loadSavedWords() {
+        const storedData = localStorage.getItem(SAVED_WORDS_STORAGE_KEY);
+        if (storedData) {
+            let parsedData = JSON.parse(storedData);
+            if (Array.isArray(parsedData) && parsedData.length > 0 && typeof parsedData[0] === 'string') {
+                savedWords = parsedData.map(word => ({ word: word, timestamp: Date.now() }));
+                saveWordsToStorage();
+            } else {
+                savedWords = parsedData || [];
+            }
+        }
+    }
+
+    function saveWordsToStorage() {
+        localStorage.setItem(SAVED_WORDS_STORAGE_KEY, JSON.stringify(savedWords));
+    }
+
+    function getWordById(id) {
+        if (!id || Object.keys(vocabularyData).length === 0) return null;
+        const entry = Object.values(vocabularyData).find(e => e.vocabId == id);
+        if (entry) {
+          return Object.keys(vocabularyData).find(key => vocabularyData[key].vocabId == id);
+        }
+        return null;
+    }
+
+    function updateSaveIconStateForCurrentId() {
+        const id = document.getElementById('id-input').value;
+        const word = getWordById(id);
+        const icon = document.getElementById('id-save-icon');
+        
+        if (word && savedWords.some(item => item.word === word)) {
+            icon.style.fill = 'var(--color-accent)';
+            icon.style.stroke = 'var(--color-accent)';
+            icon.style.removeProperty('color');
+        } else {
+            icon.style.fill = 'none';
+            icon.style.removeProperty('stroke');
+            icon.style.removeProperty('color');
+        }
+    }
+
+    function updateVisibleSuggestionSavedState(word, isNowSaved) {
+        const links = document.querySelectorAll(`.suggestion-link[data-word="${word}"]`);
+        links.forEach(link => {
+            link.classList.toggle('is-saved', isNowSaved);
+            const existingDot = link.querySelector('.suggestion-saved-dot');
+            if (isNowSaved && !existingDot) {
+                const dot = document.createElement('span');
+                dot.className = 'suggestion-saved-dot';
+                link.appendChild(dot);
+            } else if (!isNowSaved && existingDot) {
+                existingDot.remove();
+            }
+        });
+    }
+    
+    function handleSaveButtonClick(e) {
+        e.stopPropagation();
+        const id = document.getElementById('id-input').value.trim();
+        const icon = document.getElementById('id-save-icon');
+        
+        if (!id) {
+            return;
+        }
+        
+        const word = getWordById(id);
+        
+        if (word) {
+            const existingIndex = savedWords.findIndex(item => item.word === word);
+            
+            if (existingIndex > -1) {
+                savedWords.splice(existingIndex, 1);
+            } else {
+                savedWords.push({ word: word, timestamp: Date.now() });
+            }
+            
+            saveWordsToStorage();
+            updateSaveIconStateForCurrentId();
+            updateVisibleSuggestionSavedState(word, existingIndex === -1);
+
+            if (savedWordsMenu.classList.contains('is-open')) {
+                populateSavedWordsList();
+            }
+
+        } else {
+            icon.style.stroke = 'var(--color-error)';
+            icon.style.color = 'var(--color-error)';
+            
+            setTimeout(() => {
+                updateSaveIconStateForCurrentId();
+            }, 500);
+        }
+    }
+
+    /**
+     * NEW: Helper function to strip the prefix (e.g., "inj. ") from a meaning string.
+     * Used for references in etymology and copy-to-clipboard functionality.
+     */
+    /**
+ * BİR ANLAMI REFERANS OLARAK KULLANMADAN ÖNCE TEMİZLEYEN DÜZELTİLMİŞ FONKSİYON
+ * Bu sürüm, noktalı virgülle ayrılmış birden çok tanım içeren anlam metinlerini doğru bir şekilde işler.
+ */
+function getCleanMeaning(fullMeaning) {
+  if (!fullMeaning) return '';
+  
+  // Anlam metnini noktalı virgüle göre bölerek her tanımı ayrı bir eleman haline getir.
+  return fullMeaning.split(';')
+    .map(part => {
+      // Her parçanın başındaki ve sonundaki boşlukları temizle.
+      const trimmedPart = part.trim();
+      const firstPeriodIndex = trimmedPart.indexOf(':');
+      
+      // "kelime. anlam" şeklindeki ön ek yapısını kontrol et (noktadan sonra boşluk olmalı).
+      // Bu, anlamın kendi içindeki noktalarla karışmasını önler.
+      if (firstPeriodIndex > 0 && trimmedPart.charAt(firstPeriodIndex + 1) === ' ') {
+        // Eğer bir ön ek bulunursa, sadece anlamın kendisini döndür.
+        return trimmedPart.substring(firstPeriodIndex + 2).trim();
+      }
+      
+      // Ön ek bulunamazsa, parçayı olduğu gibi döndür.
+      return trimmedPart;
+    })
+    // Temizlenmiş parçaları, aralarında "; " olacak şekilde tekrar birleştir.
+    .join('; ');
+}
+  
+  // If no prefix is found, return the original full meaning, preserving semicolons.
+ 
+    function getAIResponse(word, userMessage) {
+      stopAll();
+      
+      isLoading = true;
+      chatContainer.classList.add('is-loading');
+      const messageWrapper = displayMessage(`<div class="loading-dots"><span></span><span></span><span></span><span></span></div>`, "ai");
+      userMessage.classList.add('is-awaiting-response');
+      messageWrapper.classList.add('is-response');
+
+      updateSubmitButtonState();
+      updateLanguageTagOnScroll();
+
+      let thinkingTime = 0;
+      const data = findWordEntry(word);
+      let suggestions = [];
+
+      const idSpan = messageWrapper.querySelector('.meta-id');
+      if (idSpan) {
+        if (data && data.vocabId) {
+          idSpan.textContent = data.vocabId;
+        } else {
+          if (word.toLowerCase() !== 'copy') { 
+            idSpan.textContent = '∅';
+          }
+        }
+      }
+
+      if (data) {
+        thinkingTime += (data.meaning || '').length * 30;
+        thinkingTime += (data.etymology || '').length * 60;
+        let dynamicSuggestions = [];
+        if (data.etymology) {
+          const etymologyLines = data.etymology.split('<br>');
+          for (const line of etymologyLines) {
+            const potentialWords = line.split(' ');
+            for (const pWord of potentialWords) {
+              const cleanWord = pWord.replace(/<[^>]*>/g, "").replace(/[.,!?]/g, '').trim();
+              if (cleanWord && findWordEntry(cleanWord) && !dynamicSuggestions.includes(cleanWord)) {
+                dynamicSuggestions.push(cleanWord);
+              }
+            }
+          }
+        }
+        const lowerWord = word.toLocaleLowerCase('tr-TR');
+        const wordBacklinks = backlinksData[lowerWord];
+        if (wordBacklinks) {
+          const allBacklinks = [...(wordBacklinks.direct || []), ...(wordBacklinks.related || [])];
+          allBacklinks.forEach(backlinkWord => {
+            if (findWordEntry(backlinkWord) && !dynamicSuggestions.includes(backlinkWord)) {
+              dynamicSuggestions.push(backlinkWord);
+            }
+          });
+        }
+        suggestions = [...new Set(dynamicSuggestions)];
+        thinkingTime += suggestions.length * 90;
+      } else {
+        suggestions = getClosestWords(word, 5);
+        thinkingTime += suggestions.length * 30;
+      }
+      thinkingTime += 500 + Math.random() * 1000;
+      const p = messageWrapper.querySelector('p');
+      thinkingTimeout = setTimeout(() => {
+        if(userMessage.classList.contains('deleting')) {
+            stopAll();
+            messageWrapper.remove();
+            return;
+        }
+
+        userMessage.classList.remove('is-awaiting-response');
+        isLoading = false;
+        p.innerHTML = '';
+
+        if (data && data.language) {
+          p.dataset.language = data.language;
+        } else {
+          p.dataset.language = 'system';
+        }
+        updateLanguageTagOnScroll();
+        let messageText = "";
+        let commentText = "";
+        let suggestionsHTML = "";
+        
+        const savedDotHTML = `<span class="suggestion-saved-dot"></span>`;
+
+        if (data) {
+          p.dataset.messageType = 'definition';
+
+          // MODIFIED: This block generates the new HTML for the meaning.
+          let meaningHTML = '';
+          if (data.meaning) {
+              meaningHTML = data.meaning.split(';').map((item, index) => {
+                  const itemTrimmed = item.trim();
+                  const firstPeriodIndex = itemTrimmed.indexOf(':');
+                  // Check if there's a prefix to format
+                  if (firstPeriodIndex !== -1 && itemTrimmed.indexOf(' ') > firstPeriodIndex) {
+                      const prefixText = itemTrimmed.substring(0, firstPeriodIndex).trim();
+                      const restOfMeaning = itemTrimmed.substring(firstPeriodIndex + 1).trim();
+                      // CHANGE 1: Return the new structure with the styled box
+                   return `<div class="meaning-item"><span class="meaning-prefix-box"><span>${index + 1}.</span><span>${prefixText}</span></span><span class="meaning-text">${restOfMeaning}</span></div>`;  } else {
+                      // Fallback for meanings without a prefix
+                      return `<div class="meaning-item"><k>${index + 1}.</k> ${itemTrimmed}</div>`;
+                  }
+              }).join('');
+          }
+
+          let etymologyHTML = "";
+          if (data.etymology) {
+            const etymologyLines = data.etymology.split('<br>');
+            const processedLines = etymologyLines.map(line => {
+              const etymologyWords = line.split(' ');
+              const processedEtymologyWords = etymologyWords.map(etymWord => {
+                const prefixMatch = etymWord.match(/^[<]/);
+                const prefix = prefixMatch ? prefixMatch[0] : '';
+                const wordToClean = prefix ? etymWord.substring(1) : etymWord;
+                const cleanWord = wordToClean.replace(/<[^>]*>/g, "").replace(/[.,!?]/g, '').trim();
+                if (cleanWord) {
+                  const entry = findWordEntry(cleanWord);
+                  if (entry) {
+                    // MODIFIED: Use getCleanMeaning for referenced words
+                    return `${prefix}<b>${entry.language}</b> <y>${cleanWord}</y> “${getCleanMeaning(entry.meaning)}”`;
+                  }
+                }
+                return etymWord;
+              });
+              return processedEtymologyWords.join(' ');
+            });
+            etymologyHTML = processedLines.join('<br>');
+          }
+          let backlinksText = "";
+          const lowerWord = word.toLocaleLowerCase('tr-TR');
+          const wordBacklinks = backlinksData[lowerWord];
+          if (wordBacklinks) {
+            const allBacklinks = [];
+            const processBacklink = (backlinkWord, prefix) => {
+              const entry = findWordEntry(backlinkWord);
+              if (entry) {
+                // MODIFIED: Use getCleanMeaning for referenced words
+                const richFormat = `<b>${entry.language}</b> <y>${backlinkWord}</y> “${getCleanMeaning(entry.meaning)}”`;
+                allBacklinks.push(`${prefix} ${richFormat}`);
+              }
+            };
+            if (wordBacklinks.direct && wordBacklinks.direct.length > 0) {
+              wordBacklinks.direct.sort((a, b) => a.localeCompare(b, 'tr-TR'));
+              wordBacklinks.direct.forEach(bw => processBacklink(bw, '&gt;'));
+            }
+            if (wordBacklinks.related && wordBacklinks.related.length > 0) {
+              wordBacklinks.related.sort((a, b) => a.localeCompare(b, 'tr-TR'));
+              wordBacklinks.related.forEach(bw => processBacklink(bw, '&approx;'));
+            }
+            if (allBacklinks.length > 0) {
+              backlinksText = `${allBacklinks.join('<br>')}`;
+            }
+          }
+          
+          if (suggestions.length > 0) {
+              suggestionsHTML = `<div class="flex flex-wrap mt-3">` +
+                  suggestions.map(s => {
+                      const isSaved = savedWords.some(item => item.word === s);
+                      const savedClass = isSaved ? 'is-saved' : '';
+                      const dot = isSaved ? savedDotHTML : '';
+                      return `<a href="#" class="suggestion-link rounded-full ${savedClass}" data-word="${s}"><span class="suggestion-content-wrapper has-ripple px-3 py-1">${s}</span>${dot}</a>`;
+                  }).join('') +
+              `</div>`;
+          }
+
+          messageText = meaningHTML + (etymologyHTML ? '' + etymologyHTML + '<br>': '') + backlinksText;
+          if (data.comment && data.comment.trim() !== '') {
+            commentText = data.comment;
+          }
+        } else {
+          messageText = `No results found; after all, the limits of my vocabulary are the limits of my world. :3`;
+          
+          if (suggestions.length > 0) {
+              suggestionsHTML = `<div class="flex flex-wrap mt-2">` +
+                  suggestions.map(s => {
+                      const isSaved = savedWords.some(item => item.word === s);
+                      const savedClass = isSaved ? 'is-saved' : '';
+                      const dot = isSaved ? savedDotHTML : '';
+                      return `<a href="#" class="suggestion-link rounded-full ${savedClass}" data-word="${s}"><span class="suggestion-content-wrapper has-ripple px-3 py-1">${s}</span>${dot}</a>`;
+                  }).join('') +
+              `</div>`;
+          }
+        }
+
+        const onCompleteCallback = () => {
+          const bubble = p.closest('.message-bubble');
+          if (!bubble) return;
+          let hasAnimatedContent = false;
+          if (commentText) {
+            const commentSection = document.createElement('div');
+            commentSection.className = 'comment-section';
+            const linesHTML = commentText.split('\n').map(line => {
+              return line.split(' ').filter(word => word.trim() !== '').map(word => `<span class="comment-word">${word}</span>`).join(' ');
+            }).join('<br>');
+            commentSection.innerHTML = `<p>${linesHTML}</p>`;
+            bubble.appendChild(commentSection);
+            setTimeout(() => animateCommentSection(commentSection), 100);
+            hasAnimatedContent = true;
+          }
+          if (suggestionsHTML) {
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = suggestionsHTML;
+            const suggestionNode = tempContainer.firstChild;
+            if (suggestionNode) {
+              bubble.appendChild(suggestionNode);
+              const buttons = Array.from(suggestionNode.querySelectorAll('.suggestion-link'));
+              buttons.forEach((button, index) => {
+                const animationDelay = hasAnimatedContent ? 500 : 100;
+                setTimeout(() => button.classList.add('visible'), animationDelay + (index * 100));
+              });
+            }
+          }
+          smoothScrollToBottom(chatContainer, 400);
+        };
+        typewriterEffect(p, messageText, onCompleteCallback);
+      }, thinkingTime);
+    }
+
+    function levenshtein(a, b) {
+      if(a.length === 0) return b.length; if(b.length === 0) return a.length;
+      const m = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+      for(let i=0; i<=a.length; i++) m[0][i]=i; for(let j=0; j<=b.length; j++) m[j][0]=j;
+      for(let j=1; j<=b.length; j++) for(let i=1; i<=a.length; i++) {
+        const cost = a[i-1] === b[j-1] ? 0 : 1;
+        m[j][i] = Math.min(m[j][i-1] + 1, m[j-1][i] + 1, m[j-1][i-1] + cost);
+      }
+      return m[b.length][a.length];
+    }
+
+    function getClosestWords(word, count) {
+      if (Object.keys(vocabularyData).length === 0) return [];
+      const lowerWord = word.toLocaleLowerCase('tr-TR');
+      return Object.keys(vocabularyData)
+        .map(w => ({ originalWord: w, dist: levenshtein(lowerWord, w.toLocaleLowerCase('tr-TR')) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, count)
+        .map(d => d.originalWord);
+    }
+
+    function initializeOverscrollEffect() {
+      const container = chatContainer;
+      let isDragging = false, startY = 0, currentTranslate = 0, velocity = 0, animationFrameId = null;
+      const stiffness = 0.15, damping = 0.3, mass = 1, dragDamping = 0.2;
+    
+      function startDrag(y) {
+        const isScrollableMessage = event.target.closest('.message-bubble.truncated p');
+        if (isScrollableMessage) return;
+
+        if (container.scrollTop === 0 || container.scrollTop + container.clientHeight >= container.scrollHeight - 1) {
+          isDragging = true;
+          startY = y;
+          if (animationFrameId) cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+          velocity = 0;
+          container.style.transition = 'none';
+        }
+      }
+    
+      function onDrag(y) {
+        if (!isDragging) return;
+        const deltaY = y - startY;
+        const atTop = container.scrollTop === 0;
+        const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+        if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+          currentTranslate += (y - startY) * dragDamping;
+          startY = y;
+          applyTransform();
+        } else {
+          isDragging = false;
+          animateReturn();
+        }
+      }
+    
+      function endDrag() {
+        if (isDragging) {
+          isDragging = false;
+          animateReturn();
+        }
+      }
+    
+      function applyTransform() {
+        container.style.transform = `translateY(${currentTranslate}px)`;
+      }
+    
+      function animateReturn() {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        function step() {
+          const force = -stiffness * currentTranslate;
+          const acceleration = force / mass;
+          velocity += acceleration;
+          velocity *= damping;
+          currentTranslate += velocity;
+          applyTransform();
+          if (Math.abs(currentTranslate) < 0.1 && Math.abs(velocity) < 0.1) {
+            currentTranslate = 0;
+            velocity = 0;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+            container.style.transform = '';
+          } else {
+            animationFrameId = requestAnimationFrame(step);
+          }
+        }
+        animationFrameId = requestAnimationFrame(step);
+      }
+    
+      container.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
+      container.addEventListener('touchmove', (e) => {
+        if (isDragging) e.preventDefault();
+        onDrag(e.touches[0].clientY);
+      }, { passive: false });
+      container.addEventListener('touchend', endDrag);
+      container.addEventListener('touchcancel', endDrag);
+
+      container.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startDrag(e.clientY);
+      });
+      window.addEventListener('mousemove', (e) => {
+        if(isDragging) onDrag(e.clientY);
+      });
+      window.addEventListener('mouseup', endDrag);
+
+      container.addEventListener('wheel', (e) => {
+        const atTop = container.scrollTop === 0;
+        const atBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 1;
+        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {}
+      }, { passive: true });
+    }
+  </script>
+</body>
+</html>
